@@ -9,20 +9,78 @@
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Nunito', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background-color: #f9fafb;
+  background-color: #F7F7F7;
+  color: #3C3C3C;
 }
 
 @layer components {
-  .medal-gold {
-    @apply text-amber-500;
-    filter: drop-shadow(0 0 8px rgb(245 158 11 / 0.5));
+  /* Duolingo-style 3D press button */
+  .btn-duo {
+    @apply font-bold rounded-2xl px-6 py-3 transition-all duration-100
+           border-b-4 active:border-b-0 active:translate-y-1
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:border-b-0 disabled:translate-y-1;
   }
-  .medal-silver {
-    @apply text-gray-400;
+  .btn-duo-green {
+    @apply btn-duo bg-duo-green border-duo-green-dark text-white
+           hover:bg-duo-green/90;
   }
-  .medal-bronze {
-    @apply text-amber-700;
+  .btn-duo-blue {
+    @apply btn-duo bg-duo-blue border-duo-blue-dark text-white
+           hover:bg-duo-blue/90;
+  }
+  .btn-duo-yellow {
+    @apply btn-duo bg-duo-yellow border-duo-yellow-dark text-duo-text
+           hover:bg-duo-yellow/90;
+  }
+  .btn-duo-purple {
+    @apply btn-duo bg-duo-purple border-duo-purple-dark text-white
+           hover:bg-duo-purple/90;
+  }
+  .btn-duo-outline {
+    @apply btn-duo bg-white border-duo-border text-duo-text
+           hover:bg-gray-50;
+  }
+
+  /* Duolingo-style card */
+  .card-duo {
+    @apply bg-white rounded-3xl border-2 border-duo-border shadow-sm;
+  }
+
+  /* XP progress bar */
+  .xp-bar {
+    @apply h-4 bg-gray-200 rounded-full overflow-hidden;
+  }
+  .xp-fill {
+    @apply h-full rounded-full transition-all duration-700;
+  }
+
+  /* Skill node (circular button on world map) */
+  .skill-node {
+    @apply w-16 h-16 rounded-full border-b-4 flex flex-col items-center justify-center
+           font-bold transition-all duration-150 hover:scale-110 active:scale-95
+           active:border-b-0 active:translate-y-1;
+  }
+  .skill-node-done {
+    @apply bg-duo-green border-duo-green-dark text-white shadow-lg;
+  }
+  .skill-node-active {
+    @apply bg-white border-duo-border text-duo-text shadow-md
+           ring-4 ring-duo-yellow ring-offset-2 animate-bounce-slow;
+  }
+  .skill-node-locked {
+    @apply bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed opacity-70;
+  }
+
+  /* Medal styles */
+  .medal-gold   { @apply text-duo-yellow; filter: drop-shadow(0 0 8px rgb(255 217 0 / 0.6)); }
+  .medal-silver { @apply text-gray-400; }
+  .medal-bronze { @apply text-amber-700; }
+
+  /* Streak fire badge */
+  .streak-badge {
+    @apply flex items-center gap-1 bg-duo-orange/10 text-duo-orange
+           font-bold text-sm rounded-full px-3 py-1 border border-duo-orange/20;
   }
 }

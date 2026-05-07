@@ -1,23 +1,16 @@
 import { useState, type ChangeEvent } from 'react';
-import { ArrowLeft, Trophy, ChevronDown, ChevronUp, Loader2, Send, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Loader2, Send, AlertCircle, Lightbulb } from 'lucide-react';
 import { useGameStore } from '../../store/gameStore';
 import { DOJO_CHALLENGES } from '../../data/dojoData';
 import { runDojoChallenge, evaluateResponse, estimateTokens } from '../../services/claudeService';
 import { calcDojoScore } from '../../types/challenge';
 import type { ChallengeAttempt, Medal, DojoDayProgress } from '../../types/challenge';
 
-const MEDAL_LABELS: Record<Medal, string> = {
-  gold: '🥇 ゴールド',
-  silver: '🥈 シルバー',
-  bronze: '🥉 ブロンズ',
-  none: '未達成',
-};
-
-const MEDAL_COLORS: Record<Medal, string> = {
-  gold: 'text-yellow-600 bg-yellow-50 border-yellow-300',
-  silver: 'text-slate-600 bg-slate-50 border-slate-300',
-  bronze: 'text-orange-700 bg-orange-50 border-orange-300',
-  none: 'text-gray-600 bg-gray-50 border-gray-300',
+const MEDAL_STYLES: Record<Medal, { bg: string; border: string; text: string; label: string; emoji: string }> = {
+  gold:   { bg: 'bg-duo-yellow/10',  border: 'border-duo-yellow',      text: 'text-amber-600',  label: 'ゴールド',  emoji: '🥇' },
+  silver: { bg: 'bg-gray-100',       border: 'border-gray-300',        text: 'text-gray-600',   label: 'シルバー',  emoji: '🥈' },
+  bronze: { bg: 'bg-orange-50',      border: 'border-orange-300',      text: 'text-orange-700', label: 'ブロンズ',  emoji: '🥉' },
+  none:   { bg: 'bg-duo-red/5',      border: 'border-duo-red/30',      text: 'text-duo-red',    label: '未達成',    emoji: '😔' },
 };
 
 export function DojoChallenge() {
@@ -34,14 +27,12 @@ export function DojoChallenge() {
   const [error, setError] = useState<string | null>(null);
 
   if (selectedDojoDay === null) return null;
-
   const challenge = DOJO_CHALLENGES[selectedDojoDay - 1];
   if (!challenge) return null;
 
   const dayProgress: DojoDayProgress | undefined = dojoProgress.find((d: DojoDayProgress) => d.day === selectedDojoDay);
   const previouslyCompleted = dayProgress?.completed ?? false;
   const attempts = dayProgress?.attempts ?? 0;
-
   const estimatedTokens = estimateTokens(prompt);
 
   async function handleSubmit() {
@@ -75,7 +66,6 @@ export function DojoChallenge() {
     } catch {
       evalResult = { qualityScore: 50, feedback: '評価に失敗しました' };
     }
-
     setEvaluating(false);
 
     const { score, medal } = calcDojoScore(
@@ -111,206 +101,220 @@ export function DojoChallenge() {
   const canSubmit = !!apiKey && prompt.trim().length > 0 && !loading && !evaluating;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+    <div className="min-h-screen bg-duo-bg">
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
 
-        {/* Header */}
+        {/* Page header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">
-            Day {challenge.day} — {challenge.skill}
-          </h1>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-duo-green/10 border-2 border-duo-green/30 flex items-center justify-center text-xl">
+              🏯
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-duo-green uppercase tracking-widest">Day {challenge.day}</p>
+              <h1 className="text-lg font-black text-duo-text leading-tight">{challenge.skill}</h1>
+            </div>
+          </div>
           <button
             onClick={() => setView('map')}
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            className="flex items-center gap-1.5 text-sm font-bold text-duo-muted hover:text-duo-text transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            マップに戻る
+            マップ
           </button>
         </div>
 
-        {/* Challenge description card */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        {/* Challenge card */}
+        <div className="card-duo p-5 space-y-4">
           <div>
-            <p className="text-sm font-semibold text-indigo-600 mb-1">{challenge.theme}</p>
-            <p className="text-sm text-gray-700 leading-relaxed">{challenge.description}</p>
+            <span className="inline-block text-xs font-black text-duo-blue bg-duo-blue/10 border border-duo-blue/20 rounded-full px-3 py-1 mb-2">
+              {challenge.theme}
+            </span>
+            <p className="text-sm text-duo-muted leading-relaxed">{challenge.description}</p>
           </div>
 
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">課題</p>
-            <pre className="text-sm text-gray-800 font-mono whitespace-pre-wrap leading-relaxed">
+          <div className="bg-duo-bg rounded-2xl p-4 border-2 border-duo-border">
+            <p className="text-[10px] font-black text-duo-light uppercase tracking-widest mb-2">課題</p>
+            <pre className="text-sm text-duo-text font-mono whitespace-pre-wrap leading-relaxed">
               {challenge.task}
             </pre>
           </div>
 
           <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-              理想の出力
-            </p>
-            <p className="text-sm text-gray-700">{challenge.targetOutput}</p>
+            <p className="text-[10px] font-black text-duo-light uppercase tracking-widest mb-1">理想の出力</p>
+            <p className="text-sm text-duo-muted">{challenge.targetOutput}</p>
           </div>
         </div>
 
-        {/* Token limits card */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-            トークン制限
-          </p>
-          <div className="flex gap-4">
-            <div className="flex items-center gap-1.5 text-sm text-yellow-700">
-              <span>🥇</span>
-              <span>≤ {challenge.tokenLimits.gold} トークン</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-sm text-slate-600">
-              <span>🥈</span>
-              <span>≤ {challenge.tokenLimits.silver} トークン</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-sm text-orange-700">
-              <span>🥉</span>
-              <span>≤ {challenge.tokenLimits.bronze} トークン</span>
-            </div>
+        {/* Token limits */}
+        <div className="card-duo p-4">
+          <p className="text-[10px] font-black text-duo-light uppercase tracking-widest mb-3">トークン制限</p>
+          <div className="flex gap-3">
+            {([
+              { medal: 'gold',   limit: challenge.tokenLimits.gold,   emoji: '🥇', color: 'bg-duo-yellow/10 border-duo-yellow/30 text-amber-700' },
+              { medal: 'silver', limit: challenge.tokenLimits.silver, emoji: '🥈', color: 'bg-gray-100 border-gray-200 text-gray-600' },
+              { medal: 'bronze', limit: challenge.tokenLimits.bronze, emoji: '🥉', color: 'bg-orange-50 border-orange-200 text-orange-700' },
+            ] as const).map(({ emoji, limit, color }) => (
+              <div key={emoji} className={`flex-1 flex items-center justify-center gap-1.5 rounded-2xl border-2 py-2.5 text-sm font-bold ${color}`}>
+                <span>{emoji}</span>
+                <span>≤{limit}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Hints accordion */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        {/* Hints */}
+        <div className="card-duo overflow-hidden">
           <button
-            className="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center justify-between px-5 py-4 font-bold text-duo-text hover:bg-duo-bg transition-colors"
             onClick={() => setHintsOpen((o: boolean) => !o)}
           >
-            <span>ヒント ({challenge.hints.length}件)</span>
-            {hintsOpen ? (
-              <ChevronUp className="w-4 h-4 text-gray-400" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            )}
+            <div className="flex items-center gap-2">
+              <Lightbulb className="w-4 h-4 text-duo-yellow" />
+              <span className="text-sm">ヒント</span>
+              <span className="text-xs bg-duo-yellow/20 text-amber-700 font-black px-2 py-0.5 rounded-full border border-duo-yellow/30">
+                {challenge.hints.length}件
+              </span>
+            </div>
+            {hintsOpen
+              ? <ChevronUp className="w-4 h-4 text-duo-light" />
+              : <ChevronDown className="w-4 h-4 text-duo-light" />
+            }
           </button>
           {hintsOpen && (
-            <div className="px-5 pb-4 space-y-2 border-t border-gray-100">
+            <div className="px-5 pb-4 space-y-2 border-t-2 border-duo-border">
               {challenge.hints.slice(0, revealedHints).map((hint, i) => (
-                <div key={i} className="flex gap-2 text-sm text-gray-700">
-                  <span className="text-indigo-400 font-bold shrink-0">{i + 1}.</span>
-                  <span>{hint}</span>
+                <div key={i} className="flex gap-2 text-sm bg-duo-bg rounded-xl p-3 border border-duo-border">
+                  <span className="text-duo-blue font-black shrink-0">{i + 1}.</span>
+                  <span className="text-duo-muted">{hint}</span>
                 </div>
               ))}
-              {revealedHints < challenge.hints.length && (
+              {revealedHints < challenge.hints.length ? (
                 <button
                   onClick={handleRevealHint}
-                  className="mt-2 text-xs text-indigo-600 hover:text-indigo-800 font-medium underline"
+                  className="mt-1 text-xs font-black text-duo-blue hover:text-duo-blue-dark underline"
                 >
-                  {revealedHints === 0 ? '最初のヒントを見る' : '次のヒントを見る'}
+                  {revealedHints === 0 ? '最初のヒントを見る 👀' : '次のヒントを見る 💡'}
                 </button>
-              )}
-              {revealedHints === challenge.hints.length && revealedHints > 0 && (
-                <p className="mt-1 text-xs text-gray-400">ヒントをすべて表示しました</p>
+              ) : (
+                revealedHints > 0 && (
+                  <p className="text-xs text-duo-light font-bold mt-1">ヒントをすべて表示しました ✅</p>
+                )
               )}
             </div>
           )}
         </div>
 
-        {/* Prompt editor */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
-          <label className="block text-sm font-medium text-gray-700">
-            あなたのプロンプトを書いてください
+        {/* Prompt input */}
+        <div className="card-duo p-5 space-y-3">
+          <label className="block text-sm font-black text-duo-text">
+            ✏️ プロンプトを書いてください
           </label>
           <textarea
             value={prompt}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setPrompt(e.target.value)}
             placeholder="ここにプロンプトを入力..."
-            className="w-full min-h-48 resize-y rounded-lg border border-gray-300 p-3 font-mono text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+            className="w-full min-h-48 resize-y rounded-2xl border-2 border-duo-border p-4 font-mono text-sm text-duo-text placeholder-duo-light focus:outline-none focus:border-duo-blue bg-duo-bg"
           />
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-400">
-              推定トークン数: <span className="font-semibold text-gray-600">{estimatedTokens}</span>
+            <span className="text-xs font-bold text-duo-light">
+              推定: <span className="text-duo-muted">{estimatedTokens} トークン</span>
             </span>
             <button
               onClick={handleSubmit}
               disabled={!canSubmit}
-              className="flex items-center gap-2 px-5 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-700 transition-colors"
+              className="btn-duo-green flex items-center gap-2 px-6 py-2.5 text-sm"
             >
               <Send className="w-4 h-4" />
-              送信
+              送信！
             </button>
           </div>
           {!apiKey && (
-            <p className="text-xs text-amber-600 flex items-center gap-1">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-duo-orange bg-duo-orange/10 rounded-xl px-3 py-2 border border-duo-orange/20">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-              APIキーが設定されていない場合は設定画面から登録してください
-            </p>
+              設定画面からAPIキーを登録してください
+            </div>
           )}
         </div>
 
-        {/* Loading state */}
+        {/* Loading */}
         {loading && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col items-center gap-3">
-            <Loader2 className="w-7 h-7 animate-spin text-indigo-500" />
-            <p className="text-sm text-gray-600">Claudeに送信中...</p>
+          <div className="card-duo p-8 flex flex-col items-center gap-3">
+            <div className="text-4xl animate-bounce-slow">🤖</div>
+            <p className="text-sm font-bold text-duo-muted">Claudeに送信中...</p>
+            <Loader2 className="w-5 h-5 animate-spin text-duo-blue" />
           </div>
         )}
 
-        {/* Response + evaluation */}
+        {/* Response */}
         {response !== null && !loading && (
-          <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Claudeの回答
+          <div className="card-duo p-5 space-y-4">
+            <p className="text-[10px] font-black text-duo-light uppercase tracking-widest">
+              💬 Claudeの回答
             </p>
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+            <div className="rounded-2xl border-2 border-duo-border bg-duo-bg p-4 text-sm text-duo-muted leading-relaxed whitespace-pre-wrap">
               {response}
             </div>
 
             {evaluating && (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
-                採点中...
+              <div className="flex items-center gap-2 text-sm font-bold text-duo-muted">
+                <Loader2 className="w-4 h-4 animate-spin text-duo-purple" />
+                採点中... 🎯
               </div>
             )}
 
-            {attempt && !evaluating && (
-              <div className={`rounded-lg border p-4 space-y-2 ${MEDAL_COLORS[attempt.medal as Medal]}`}>
-                <div className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5" />
-                  <span className="font-bold text-sm">{MEDAL_LABELS[attempt.medal as Medal]}</span>
-                  <span className="ml-auto text-sm font-semibold">{attempt.score} pts</span>
-                </div>
-                <p className="text-xs">
-                  品質スコア: {attempt.qualityScore}/100 ・ トークン使用: {attempt.totalTokens}
-                </p>
-                <div className="pt-1">
+            {attempt && !evaluating && (() => {
+              const ms = MEDAL_STYLES[attempt.medal as Medal];
+              return (
+                <div className={`rounded-2xl border-2 p-4 space-y-3 ${ms.bg} ${ms.border}`}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl animate-bounce-in">{ms.emoji}</span>
+                    <span className={`font-black text-base ${ms.text}`}>{ms.label}</span>
+                    <span className={`ml-auto font-black text-lg ${ms.text}`}>{attempt.score} pts</span>
+                  </div>
+                  <p className={`text-xs font-bold ${ms.text} opacity-80`}>
+                    品質スコア: {attempt.qualityScore}/100 · トークン: {attempt.totalTokens}
+                  </p>
                   <button
                     onClick={() => setView('results')}
-                    className="w-full py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
+                    className="btn-duo-green w-full"
                   >
-                    結果画面へ
+                    結果を見る 🎉
                   </button>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         )}
 
-        {/* Error state */}
+        {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex gap-2 text-sm text-red-700">
+          <div className="card-duo border-duo-red/30 p-4 flex gap-2 text-sm text-duo-red font-bold bg-duo-red/5">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* Previous attempt info */}
-        {previouslyCompleted && !attempt && dayProgress && (
-          <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-1">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <Trophy className="w-4 h-4 text-yellow-500" />
-              <span>前回の記録</span>
-              <span className={`ml-auto px-2 py-0.5 rounded-full text-xs font-semibold border ${MEDAL_COLORS[dayProgress.medal]}`}>
-                {MEDAL_LABELS[dayProgress.medal]}
-              </span>
+        {/* Previous record */}
+        {previouslyCompleted && !attempt && dayProgress && (() => {
+          const ms = MEDAL_STYLES[dayProgress.medal];
+          return (
+            <div className="card-duo p-4 space-y-1">
+              <div className="flex items-center gap-2 text-sm font-black text-duo-text">
+                <span className="text-xl">{ms.emoji}</span>
+                <span>前回の記録</span>
+                <span className={`ml-auto text-xs px-2 py-0.5 rounded-full border ${ms.bg} ${ms.border} ${ms.text}`}>
+                  {ms.label}
+                </span>
+              </div>
+              <p className="text-xs font-bold text-duo-muted">
+                スコア: {dayProgress.score} · 挑戦回数: {dayProgress.attempts}回
+              </p>
+              <p className="text-xs font-bold text-duo-blue">再挑戦して記録を更新しよう！ 💪</p>
             </div>
-            <p className="text-xs text-gray-500">
-              スコア: {dayProgress.score} ・ 挑戦回数: {dayProgress.attempts}回
-            </p>
-            <p className="text-xs text-indigo-600">再挑戦して記録を更新できます</p>
-          </div>
-        )}
+          );
+        })()}
+
       </div>
     </div>
   );

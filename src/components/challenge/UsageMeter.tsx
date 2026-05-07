@@ -13,27 +13,13 @@ function formatCountdown(endIso: string): string {
   const hours = Math.floor(totalSecs / 3600);
   const mins = Math.floor((totalSecs % 3600) / 60);
   const secs = totalSecs % 60;
-  if (hours > 0) {
-    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
-  }
+  if (hours > 0) return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
 function formatTokens(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
   return String(n);
-}
-
-function sprintBarColor(pct: number): string {
-  if (pct > 85) return 'bg-red-500';
-  if (pct > 60) return 'bg-yellow-400';
-  return 'bg-emerald-500';
-}
-
-function sprintTextColor(pct: number): string {
-  if (pct > 85) return 'text-red-400';
-  if (pct > 60) return 'text-yellow-400';
-  return 'text-emerald-400';
 }
 
 export function UsageMeter({ sprint, weekly }: UsageMeterProps) {
@@ -48,50 +34,55 @@ export function UsageMeter({ sprint, weekly }: UsageMeterProps) {
   const weeklyPct = Math.min(100, (weekly.tokensUsed / weekly.tokensLimit) * 100);
   const sprintExpired = Date.now() >= new Date(sprint.windowEnd).getTime();
 
+  const sprintBarColor = sprintPct > 85 ? 'bg-duo-red' : sprintPct > 60 ? 'bg-duo-yellow' : 'bg-duo-green';
+  const sprintTextColor = sprintPct > 85 ? 'text-duo-red' : sprintPct > 60 ? 'text-amber-500' : 'text-duo-green';
+
   return (
-    <div className="bg-gray-900 border border-gray-700/80 rounded-xl p-3 space-y-3">
-      <div className="space-y-1.5">
+    <div className="card-duo p-4 space-y-3">
+      {/* Sprint */}
+      <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Zap size={13} className="text-yellow-400" />
-            <span className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Sprint</span>
+            <Zap size={13} className="text-duo-yellow" />
+            <span className="text-xs font-black text-duo-muted uppercase tracking-wide">Sprint</span>
             {sprintExpired ? (
-              <span className="text-xs text-red-400 font-mono font-bold">ENDED</span>
+              <span className="text-[10px] font-black text-duo-red bg-duo-red/10 rounded-full px-2 py-0.5">ENDED</span>
             ) : (
-              <span className={`text-xs font-mono font-semibold ${sprintTextColor(sprintPct)}`}>
-                {formatCountdown(sprint.windowEnd)}
+              <span className={`text-xs font-black font-mono ${sprintTextColor}`}>
+                ⏱ {formatCountdown(sprint.windowEnd)}
               </span>
             )}
           </div>
-          <span className="text-xs font-mono text-gray-400">
-            <span className={sprintTextColor(sprintPct)}>{formatTokens(sprint.tokensUsed)}</span>
-            <span className="text-gray-600"> / </span>
+          <span className="text-xs font-black font-mono text-duo-muted">
+            <span className={sprintTextColor}>{formatTokens(sprint.tokensUsed)}</span>
+            <span className="text-duo-light"> / </span>
             {formatTokens(sprint.tokensLimit)}
           </span>
         </div>
-        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+        <div className="xp-bar h-3">
           <div
-            className={`h-full rounded-full transition-all duration-500 ${sprintBarColor(sprintPct)}`}
+            className={`xp-fill ${sprintBarColor}`}
             style={{ width: `${sprintPct}%` }}
           />
         </div>
       </div>
 
-      <div className="space-y-1.5">
+      {/* Weekly */}
+      <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Calendar size={13} className="text-blue-400" />
-            <span className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Weekly</span>
+            <Calendar size={13} className="text-duo-blue" />
+            <span className="text-xs font-black text-duo-muted uppercase tracking-wide">Weekly</span>
           </div>
-          <span className="text-xs font-mono text-gray-400">
-            <span className="text-blue-400">{formatTokens(weekly.tokensUsed)}</span>
-            <span className="text-gray-600"> / </span>
+          <span className="text-xs font-black font-mono text-duo-muted">
+            <span className="text-duo-blue">{formatTokens(weekly.tokensUsed)}</span>
+            <span className="text-duo-light"> / </span>
             {formatTokens(weekly.tokensLimit)}
           </span>
         </div>
-        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+        <div className="xp-bar h-3">
           <div
-            className="h-full rounded-full bg-blue-500 transition-all duration-500"
+            className="xp-fill bg-duo-blue"
             style={{ width: `${weeklyPct}%` }}
           />
         </div>

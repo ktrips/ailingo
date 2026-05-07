@@ -1,49 +1,52 @@
-import { Lock, Trophy, Star, ChevronRight, CheckCircle2, Sword, Hammer, Sparkles } from 'lucide-react';
+import { Lock, Trophy, ChevronRight, CheckCircle2, Star } from 'lucide-react';
 import { useGameStore } from '../../store/gameStore';
 import { DOJO_CHALLENGES } from '../../data/dojoData';
-import { BUILDER_CHALLENGES, DIFFICULTY_LABELS, DIFFICULTY_COLORS } from '../../data/builderData';
+import { BUILDER_CHALLENGES, DIFFICULTY_LABELS } from '../../data/builderData';
 import { UsageMeter } from './UsageMeter';
 import type { Medal, DojoDayProgress, BuilderChallengeProgress } from '../../types/challenge';
 
-function MedalIcon({ medal }: { medal: Medal }) {
-  if (medal === 'gold') return <span className="text-lg leading-none">🥇</span>;
-  if (medal === 'silver') return <span className="text-lg leading-none">🥈</span>;
-  if (medal === 'bronze') return <span className="text-lg leading-none">🥉</span>;
-  return <span className="text-lg leading-none opacity-20">⬜</span>;
+const DAY_EMOJIS = ['🗡️', '📝', '🔒', '📚', '🧠', '💬', '🏆'];
+
+function MedalBadge({ medal }: { medal: Medal }) {
+  if (medal === 'gold')   return <span className="text-base">🥇</span>;
+  if (medal === 'silver') return <span className="text-base">🥈</span>;
+  if (medal === 'bronze') return <span className="text-base">🥉</span>;
+  return null;
 }
 
 function DojoNode({
   day,
   skill,
   progress,
+  isNext,
   onClick,
 }: {
   day: number;
   skill: string;
   progress: DojoDayProgress | undefined;
+  isNext: boolean;
   onClick: () => void;
 }) {
   const completed = progress?.completed ?? false;
   const medal = progress?.medal ?? 'none';
 
+  let nodeClass = 'skill-node-locked';
+  if (completed)    nodeClass = 'skill-node-done';
+  else if (isNext)  nodeClass = 'skill-node-active';
+
   return (
-    <button
-      onClick={onClick}
-      className={`
-        flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all duration-200
-        hover:scale-105 active:scale-95 min-w-[68px] flex-1
-        ${completed
-          ? 'border-emerald-500 bg-emerald-950/70 shadow-lg shadow-emerald-500/20'
-          : 'border-gray-700 bg-gray-800/50 hover:border-emerald-600 hover:bg-emerald-950/30'
-        }
-      `}
-    >
-      <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Day {day}</div>
-      <MedalIcon medal={medal} />
-      <div className="text-[10px] text-gray-400 text-center leading-tight max-w-[64px] truncate" title={skill}>
-        {skill}
+    <div className="flex flex-col items-center gap-2">
+      <button onClick={onClick} className={`skill-node ${nodeClass}`}>
+        <span className="text-xl">{DAY_EMOJIS[(day - 1) % DAY_EMOJIS.length]}</span>
+        <span className="text-[9px] font-black">Day{day}</span>
+      </button>
+      <div className="text-center">
+        {completed && <MedalBadge medal={medal} />}
+        <p className="text-[10px] font-bold text-duo-muted max-w-[64px] leading-tight line-clamp-2 text-center">
+          {skill}
+        </p>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -51,15 +54,21 @@ function StarsDisplay({ count, max = 5 }: { count: number; max?: number }) {
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: max }, (_, i) => (
-        <Star
-          key={i}
-          size={11}
-          className={i < count ? 'text-yellow-400 fill-yellow-400' : 'text-gray-700 fill-gray-700'}
+        <Star key={i} size={11}
+          className={i < count ? 'text-duo-yellow fill-duo-yellow' : 'text-gray-200 fill-gray-200'}
         />
       ))}
     </div>
   );
 }
+
+const DIFF_STYLES: Record<string, { bg: string; text: string; border: string }> = {
+  easy:   { bg: 'bg-duo-green/10',  text: 'text-green-700',  border: 'border-duo-green/40' },
+  normal: { bg: 'bg-duo-blue/10',   text: 'text-blue-700',   border: 'border-duo-blue/40' },
+  hard:   { bg: 'bg-duo-orange/10', text: 'text-orange-700', border: 'border-duo-orange/40' },
+  expert: { bg: 'bg-duo-red/10',    text: 'text-red-700',    border: 'border-duo-red/40' },
+  master: { bg: 'bg-duo-purple/10', text: 'text-purple-700', border: 'border-duo-purple/40' },
+};
 
 function BuilderCard({
   challenge,
@@ -75,71 +84,55 @@ function BuilderCard({
   const sessionPct = progress
     ? Math.min(100, (progress.currentSession / challenge.estimatedSessions) * 100)
     : 0;
-  const colorClass = DIFFICULTY_COLORS[challenge.difficulty] ?? 'text-gray-400 bg-gray-800 border-gray-600';
+  const style = DIFF_STYLES[challenge.difficulty] ?? DIFF_STYLES.easy;
 
   return (
     <button
       onClick={locked ? undefined : onClick}
       disabled={locked}
       className={`
-        relative text-left p-3 rounded-xl border-2 transition-all duration-200 w-full
+        relative text-left p-4 rounded-2xl border-2 border-b-4 transition-all duration-150 w-full
+        active:border-b-2 active:translate-y-0.5
         ${locked
-          ? 'border-gray-800 bg-gray-900/40 cursor-not-allowed opacity-50'
+          ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
           : progress?.completed
-          ? 'border-blue-500/70 bg-blue-950/50 hover:border-blue-400 hover:scale-[1.02] active:scale-[0.99]'
-          : 'border-blue-800/50 bg-blue-950/20 hover:border-blue-600 hover:bg-blue-950/50 hover:scale-[1.02] active:scale-[0.99]'
+          ? 'border-duo-green/40 bg-duo-green/5 hover:bg-duo-green/10'
+          : 'border-duo-border bg-white hover:bg-gray-50'
         }
       `}
     >
       {locked && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-900/50 backdrop-blur-[1px] z-10">
-          <Lock size={16} className="text-gray-600" />
+        <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/70 z-10">
+          <Lock size={18} className="text-gray-400" />
         </div>
       )}
-      <div className="flex items-start justify-between gap-1.5 mb-1.5">
-        <span className="text-sm font-semibold text-white leading-tight">{challenge.title}</span>
-        {progress?.completed && <CheckCircle2 size={14} className="text-blue-400 shrink-0 mt-0.5" />}
+      <div className="flex items-start justify-between gap-1 mb-2">
+        <span className="text-sm font-black text-duo-text leading-tight">{challenge.title}</span>
+        {progress?.completed && <CheckCircle2 size={16} className="text-duo-green shrink-0" />}
       </div>
       <div className="flex items-center justify-between mb-2">
         <StarsDisplay count={challenge.difficultyStars} />
-        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${colorClass}`}>
+        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${style.bg} ${style.text} ${style.border}`}>
           {DIFFICULTY_LABELS[challenge.difficulty]}
         </span>
       </div>
       {progress?.started && !progress.completed && (
         <div className="space-y-1">
-          <div className="flex justify-between text-[10px] text-gray-400">
+          <div className="flex justify-between text-[10px] text-duo-muted font-bold">
             <span>Session {progress.currentSession}/{challenge.estimatedSessions}</span>
             <span>{Math.round(sessionPct)}%</span>
           </div>
-          <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-500 rounded-full transition-all duration-500"
-              style={{ width: `${sessionPct}%` }}
-            />
+          <div className="xp-bar h-2">
+            <div className="xp-fill bg-duo-blue" style={{ width: `${sessionPct}%` }} />
           </div>
         </div>
       )}
       {!progress?.started && (
-        <div className="text-[10px] text-gray-500">
-          ~{challenge.estimatedSessions} session{challenge.estimatedSessions !== 1 ? 's' : ''}
+        <div className="text-[10px] text-duo-light font-bold">
+          ~{challenge.estimatedSessions} sessions
         </div>
       )}
     </button>
-  );
-}
-
-function StageDot({ active, color }: { active: boolean; color: string }) {
-  return (
-    <div
-      className={`
-        absolute left-6 top-7 w-4 h-4 rounded-full border-2 -translate-x-1/2 z-10
-        ${active
-          ? `${color} shadow-lg`
-          : 'bg-gray-700 border-gray-600 shadow-none'
-        }
-      `}
-    />
   );
 }
 
@@ -158,7 +151,8 @@ export function WorldMap() {
   } = useGameStore();
 
   const dojoComplete = dojoProgress.every((d) => d.completed);
-  const dojoCompletionPct = Math.round((dojoProgress.filter((d) => d.completed).length / 7) * 100);
+  const dojoCompletedCount = dojoProgress.filter((d) => d.completed).length;
+  const dojoCompletionPct = Math.round((dojoCompletedCount / 7) * 100);
 
   const hardChallenges = BUILDER_CHALLENGES.filter((c) => c.difficulty === 'hard');
   const hardAllDone = hardChallenges.length > 0 && hardChallenges.every((c) =>
@@ -175,227 +169,181 @@ export function WorldMap() {
   }
   const difficultyOrder = ['easy', 'normal', 'hard', 'expert', 'master'] as const;
 
-  return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+  const nextDojoDay = dojoProgress.find((d) => !d.completed)?.day
+    ?? (dojoComplete ? null : 1);
 
-        <div className="flex items-center justify-between">
+  return (
+    <div className="min-h-screen bg-duo-bg">
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+
+        {/* Top stats */}
+        <div className="card-duo p-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-black tracking-tight bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-              AI CHALLENGE
-            </h1>
-            <p className="text-xs text-gray-500 mt-0.5">プロンプトエンジニアリング道場</p>
+            <p className="text-xs font-black text-duo-light uppercase tracking-widest mb-0.5">プロンプト道場</p>
+            <p className="text-xl font-black text-duo-text">AI CHALLENGE</p>
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
+            {streak > 0 && (
+              <div className="text-center">
+                <div className="text-2xl font-black text-duo-orange leading-none">{streak}</div>
+                <div className="text-[10px] font-bold text-duo-light">🔥 連続</div>
+              </div>
+            )}
             <div className="text-center">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">連続</div>
-              <div className="text-xl font-black text-orange-400 leading-none">{streak}<span className="text-base">🔥</span></div>
-            </div>
-            <div className="text-center">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5">総得点</div>
-              <div className="text-xl font-black text-yellow-400 leading-none">{totalScore.toLocaleString()}</div>
+              <div className="text-2xl font-black text-amber-500 leading-none">{totalScore.toLocaleString()}</div>
+              <div className="text-[10px] font-bold text-duo-light">⭐ 総得点</div>
             </div>
           </div>
         </div>
 
         <UsageMeter sprint={sprint} weekly={weekly} />
 
-        <div className="relative">
-          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-emerald-500/40 via-blue-500/40 to-purple-500/40" />
-
-          <div className="space-y-4">
-
-            <div className="relative">
-              <StageDot active color="bg-emerald-500 border-emerald-300 shadow-emerald-500/60" />
-              <div className="ml-14 border-2 border-emerald-700/70 bg-gradient-to-br from-emerald-950/90 to-gray-900/90 rounded-2xl p-4 shadow-xl shadow-emerald-950/40">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                      <Sword size={16} className="text-emerald-400" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-black text-emerald-500 tracking-widest uppercase">Stage 1</span>
-                        {dojoComplete && (
-                          <span className="text-[10px] bg-emerald-500 text-black font-black px-1.5 py-0.5 rounded-full">
-                            DOJO完了
-                          </span>
-                        )}
-                      </div>
-                      <h2 className="text-lg font-black text-white leading-tight">DOJO</h2>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-black text-emerald-400 leading-none">{dojoCompletionPct}%</div>
-                    <div className="text-[10px] text-gray-500 mt-0.5">完了</div>
-                  </div>
+        {/* ── DOJO Stage ── */}
+        <div className="card-duo overflow-hidden">
+          <div className="bg-gradient-to-r from-duo-green to-emerald-400 px-5 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-2xl">
+                  🏯
                 </div>
+                <div>
+                  <p className="text-white/70 text-[10px] font-black uppercase tracking-widest">Stage 1</p>
+                  <p className="text-white font-black text-xl leading-tight">DOJO</p>
+                </div>
+              </div>
+              <div className="text-right">
+                {dojoComplete ? (
+                  <span className="bg-white text-duo-green font-black text-xs px-3 py-1.5 rounded-full shadow">
+                    ✅ 完了！
+                  </span>
+                ) : (
+                  <span className="text-white font-black text-2xl">{dojoCompletionPct}%</span>
+                )}
+              </div>
+            </div>
+            <div className="mt-3 xp-bar h-3 bg-white/30">
+              <div className="xp-fill bg-white" style={{ width: `${dojoCompletionPct}%` }} />
+            </div>
+          </div>
 
-                <div className="w-full h-1.5 bg-gray-800/80 rounded-full mb-4 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-700"
-                    style={{ width: `${dojoCompletionPct}%` }}
+          <div className="p-5">
+            <div className="flex flex-wrap justify-center gap-4">
+              {DOJO_CHALLENGES.map((ch) => {
+                const prog = dojoProgress.find((d) => d.day === ch.day);
+                const isNext = ch.day === nextDojoDay;
+                return (
+                  <DojoNode
+                    key={ch.day}
+                    day={ch.day}
+                    skill={ch.skill}
+                    progress={prog}
+                    isNext={isNext}
+                    onClick={() => goToDojo(ch.day)}
                   />
-                </div>
-
-                <div className="flex flex-wrap gap-1.5">
-                  {DOJO_CHALLENGES.map((ch) => {
-                    const prog = dojoProgress.find((d) => d.day === ch.day);
-                    return (
-                      <DojoNode
-                        key={ch.day}
-                        day={ch.day}
-                        skill={ch.skill}
-                        progress={prog}
-                        onClick={() => goToDojo(ch.day)}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
+                );
+              })}
             </div>
-
-            <div className="relative">
-              <StageDot
-                active={!builderLocked}
-                color="bg-blue-500 border-blue-300 shadow-blue-500/60"
-              />
-              <div
-                className={`ml-14 border-2 rounded-2xl p-4 shadow-xl transition-all duration-500 ${
-                  builderLocked
-                    ? 'border-gray-800 bg-gray-900/60 opacity-60'
-                    : 'border-blue-700/70 bg-gradient-to-br from-blue-950/90 to-gray-900/90 shadow-blue-950/40'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
-                      builderLocked
-                        ? 'bg-gray-800/50 border-gray-700'
-                        : 'bg-blue-500/20 border-blue-500/40'
-                    }`}>
-                      {builderLocked
-                        ? <Lock size={15} className="text-gray-600" />
-                        : <Hammer size={16} className="text-blue-400" />
-                      }
-                    </div>
-                    <div>
-                      <span className={`text-[10px] font-black tracking-widest uppercase ${builderLocked ? 'text-gray-600' : 'text-blue-500'}`}>
-                        Stage 2
-                      </span>
-                      <h2 className={`text-lg font-black leading-tight ${builderLocked ? 'text-gray-600' : 'text-white'}`}>
-                        BUILDER
-                      </h2>
-                    </div>
-                  </div>
-                  {builderLocked && (
-                    <div className="text-xs text-gray-600 text-right leading-snug">
-                      <div>DOJOを完了</div>
-                      <div>すると解放</div>
-                    </div>
-                  )}
-                </div>
-
-                {!builderLocked && (
-                  <div className="space-y-4">
-                    {difficultyOrder.map((diff) => {
-                      const challenges = groupedBuilder[diff];
-                      if (!challenges?.length) return null;
-                      return (
-                        <div key={diff}>
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${DIFFICULTY_COLORS[diff]}`}>
-                              {DIFFICULTY_LABELS[diff]}
-                            </span>
-                            <div className="h-px flex-1 bg-gray-800" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            {challenges.map((ch) => {
-                              const prog = builderProgress.find((p) => p.challengeId === ch.id);
-                              const cardLocked = ch.difficulty === 'master' && !hardAllDone;
-                              return (
-                                <BuilderCard
-                                  key={ch.id}
-                                  challenge={ch}
-                                  progress={prog}
-                                  locked={cardLocked}
-                                  onClick={() => goToBuilder(ch.id)}
-                                />
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="relative">
-              <StageDot
-                active={!creatorLocked}
-                color="bg-purple-500 border-purple-300 shadow-purple-500/60"
-              />
-              <div
-                className={`ml-14 border-2 rounded-2xl p-4 shadow-xl transition-all duration-500 ${
-                  creatorLocked
-                    ? 'border-gray-800 bg-gray-900/60 opacity-50'
-                    : 'border-purple-700/70 bg-gradient-to-br from-purple-950/90 to-gray-900/90 shadow-purple-950/40'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
-                      creatorLocked
-                        ? 'bg-gray-800/50 border-gray-700'
-                        : 'bg-purple-500/20 border-purple-500/40'
-                    }`}>
-                      {creatorLocked
-                        ? <Lock size={15} className="text-gray-600" />
-                        : <Sparkles size={16} className="text-purple-400" />
-                      }
-                    </div>
-                    <div>
-                      <span className={`text-[10px] font-black tracking-widest uppercase ${creatorLocked ? 'text-gray-600' : 'text-purple-400'}`}>
-                        Stage 3
-                      </span>
-                      <h2 className={`text-lg font-black leading-tight ${creatorLocked ? 'text-gray-600' : 'text-white'}`}>
-                        CREATOR
-                      </h2>
-                    </div>
-                  </div>
-                  <div className={`text-right text-xs ${creatorLocked ? 'text-gray-600' : 'text-purple-400'}`}>
-                    {creatorLocked ? (
-                      <>
-                        <div>HARDを全て</div>
-                        <div>クリアで解放</div>
-                      </>
-                    ) : (
-                      <span className="text-sm font-black text-purple-300">COMING SOON</span>
-                    )}
-                  </div>
-                </div>
-                {!creatorLocked && (
-                  <div className="mt-4 text-center py-6 border border-dashed border-purple-700/40 rounded-xl">
-                    <Trophy size={32} className="text-purple-400/50 mx-auto mb-2" />
-                    <p className="text-xs text-gray-500">クリエイターステージは近日公開予定です</p>
-                    <p className="text-[10px] text-gray-600 mt-1">オリジナルAIプロダクトを世界へ</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
           </div>
         </div>
 
+        {/* ── BUILDER Stage ── */}
+        <div className={`card-duo overflow-hidden ${builderLocked ? 'opacity-70' : ''}`}>
+          <div className={`bg-gradient-to-r px-5 py-4 ${builderLocked ? 'from-gray-300 to-gray-400' : 'from-duo-blue to-sky-400'}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-2xl">
+                  {builderLocked ? '🔒' : '🏗️'}
+                </div>
+                <div>
+                  <p className="text-white/70 text-[10px] font-black uppercase tracking-widest">Stage 2</p>
+                  <p className="text-white font-black text-xl leading-tight">BUILDER</p>
+                </div>
+              </div>
+              {builderLocked && (
+                <span className="bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                  DOJOクリアで解放
+                </span>
+              )}
+            </div>
+          </div>
+
+          {!builderLocked && (
+            <div className="p-5 space-y-5">
+              {difficultyOrder.map((diff) => {
+                const challenges = groupedBuilder[diff];
+                if (!challenges?.length) return null;
+                const style = DIFF_STYLES[diff];
+                return (
+                  <div key={diff}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={`text-xs font-black px-3 py-1 rounded-full border ${style.bg} ${style.text} ${style.border}`}>
+                        {DIFFICULTY_LABELS[diff]}
+                      </span>
+                      <div className="h-0.5 flex-1 bg-duo-border rounded-full" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {challenges.map((ch) => {
+                        const prog = builderProgress.find((p) => p.challengeId === ch.id);
+                        const cardLocked = ch.difficulty === 'master' && !hardAllDone;
+                        return (
+                          <BuilderCard
+                            key={ch.id}
+                            challenge={ch}
+                            progress={prog}
+                            locked={cardLocked}
+                            onClick={() => goToBuilder(ch.id)}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── CREATOR Stage ── */}
+        <div className={`card-duo overflow-hidden ${creatorLocked ? 'opacity-60' : ''}`}>
+          <div className={`bg-gradient-to-r px-5 py-4 ${creatorLocked ? 'from-gray-300 to-gray-400' : 'from-duo-purple to-violet-400'}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-2xl">
+                  {creatorLocked ? '🔒' : '🌟'}
+                </div>
+                <div>
+                  <p className="text-white/70 text-[10px] font-black uppercase tracking-widest">Stage 3</p>
+                  <p className="text-white font-black text-xl leading-tight">CREATOR</p>
+                </div>
+              </div>
+              {creatorLocked ? (
+                <span className="bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                  HARDクリアで解放
+                </span>
+              ) : (
+                <span className="bg-white text-duo-purple font-black text-xs px-3 py-1.5 rounded-full shadow">
+                  COMING SOON
+                </span>
+              )}
+            </div>
+          </div>
+          {!creatorLocked && (
+            <div className="p-6 text-center">
+              <p className="text-4xl mb-3 animate-float">🚀</p>
+              <p className="text-duo-muted font-bold text-sm">クリエイターステージは近日公開予定！</p>
+              <p className="text-duo-light text-xs mt-1">オリジナルAIプロダクトを世界へ</p>
+            </div>
+          )}
+        </div>
+
+        {/* Leaderboard button */}
         <button
           onClick={() => setView('leaderboard')}
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl border border-gray-700 bg-gray-800/50 hover:bg-gray-800 hover:border-yellow-600/50 transition-all duration-200 text-sm font-semibold text-gray-300 hover:text-yellow-300 group"
+          className="w-full flex items-center justify-center gap-2 card-duo py-4 font-black text-duo-text hover:bg-gray-50 transition-all group"
         >
-          <Trophy size={16} className="text-yellow-400" />
-          週間ランキングを見る
-          <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform duration-200" />
+          <span className="text-xl">🏆</span>
+          <span>週間ランキングを見る</span>
+          <ChevronRight size={18} className="text-duo-light group-hover:translate-x-1 transition-transform" />
         </button>
 
       </div>

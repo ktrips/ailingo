@@ -12,54 +12,59 @@ interface ResultsViewProps {
   onMap: () => void;
 }
 
-function medalEmoji(medal: Medal): string {
-  if (medal === 'gold') return '🥇';
-  if (medal === 'silver') return '🥈';
-  if (medal === 'bronze') return '🥉';
-  return '😔';
+interface MedalConfig {
+  emoji: string;
+  label: string;
+  labelColor: string;
+  scoreColor: string;
+  bgGradient: string;
+  ringColor: string;
+  barColor: string;
+  celebrationEmoji: string;
 }
 
-function medalLabel(medal: Medal): string {
-  if (medal === 'gold') return 'GOLD';
-  if (medal === 'silver') return 'SILVER';
-  if (medal === 'bronze') return 'BRONZE';
-  return 'NO MEDAL';
-}
-
-function medalGlowClass(medal: Medal): string {
-  if (medal === 'gold') return 'shadow-yellow-400/50 shadow-2xl';
-  if (medal === 'silver') return 'shadow-gray-300/30 shadow-2xl';
-  if (medal === 'bronze') return 'shadow-orange-500/40 shadow-2xl';
-  return 'shadow-gray-800/20 shadow-lg';
-}
-
-function medalRingClass(medal: Medal): string {
-  if (medal === 'gold') return 'ring-4 ring-yellow-400/70 bg-yellow-950/50';
-  if (medal === 'silver') return 'ring-4 ring-gray-400/50 bg-gray-800/70';
-  if (medal === 'bronze') return 'ring-4 ring-orange-400/50 bg-orange-950/50';
-  return 'ring-2 ring-gray-700/40 bg-gray-900/60';
-}
-
-function medalScoreColor(medal: Medal): string {
-  if (medal === 'gold') return 'text-yellow-400';
-  if (medal === 'silver') return 'text-gray-300';
-  if (medal === 'bronze') return 'text-orange-400';
-  return 'text-gray-500';
-}
-
-function medalLabelColor(medal: Medal): string {
-  if (medal === 'gold') return 'text-yellow-500 bg-yellow-950/60 border-yellow-600/50';
-  if (medal === 'silver') return 'text-gray-300 bg-gray-800/60 border-gray-600/50';
-  if (medal === 'bronze') return 'text-orange-400 bg-orange-950/60 border-orange-600/50';
-  return 'text-gray-500 bg-gray-900/60 border-gray-700/50';
-}
-
-function medalBgGradient(medal: Medal): string {
-  if (medal === 'gold') return 'from-yellow-950/30 via-gray-950 to-gray-950';
-  if (medal === 'silver') return 'from-gray-800/30 via-gray-950 to-gray-950';
-  if (medal === 'bronze') return 'from-orange-950/30 via-gray-950 to-gray-950';
-  return 'from-gray-900/30 via-gray-950 to-gray-950';
-}
+const MEDAL_CONFIG: Record<Medal, MedalConfig> = {
+  gold: {
+    emoji: '🥇',
+    label: 'GOLD',
+    labelColor: 'text-amber-600 bg-duo-yellow/20 border-duo-yellow',
+    scoreColor: 'text-amber-500',
+    bgGradient: 'from-amber-50 via-white to-duo-yellow/5',
+    ringColor: 'ring-4 ring-duo-yellow ring-offset-4',
+    barColor: 'bg-duo-yellow',
+    celebrationEmoji: '🎉',
+  },
+  silver: {
+    emoji: '🥈',
+    label: 'SILVER',
+    labelColor: 'text-gray-500 bg-gray-100 border-gray-300',
+    scoreColor: 'text-gray-500',
+    bgGradient: 'from-gray-50 via-white to-gray-50',
+    ringColor: 'ring-4 ring-gray-300 ring-offset-4',
+    barColor: 'bg-gray-400',
+    celebrationEmoji: '✨',
+  },
+  bronze: {
+    emoji: '🥉',
+    label: 'BRONZE',
+    labelColor: 'text-orange-700 bg-orange-50 border-orange-300',
+    scoreColor: 'text-orange-500',
+    bgGradient: 'from-orange-50 via-white to-orange-50',
+    ringColor: 'ring-4 ring-orange-400 ring-offset-4',
+    barColor: 'bg-duo-orange',
+    celebrationEmoji: '👏',
+  },
+  none: {
+    emoji: '😔',
+    label: 'NO MEDAL',
+    labelColor: 'text-gray-400 bg-gray-50 border-gray-200',
+    scoreColor: 'text-gray-400',
+    bgGradient: 'from-gray-50 via-white to-gray-50',
+    ringColor: 'ring-2 ring-gray-200 ring-offset-4',
+    barColor: 'bg-gray-300',
+    celebrationEmoji: '💪',
+  },
+};
 
 function ScoreStat({
   label,
@@ -73,13 +78,13 @@ function ScoreStat({
   icon?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-800/60 border border-gray-700/60">
-      <div className="flex items-center gap-1 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+    <div className="card-duo flex flex-col items-center gap-1.5 p-4">
+      <div className="flex items-center gap-1 text-[10px] font-black text-duo-light uppercase tracking-wider">
         {icon}
         {label}
       </div>
-      <div className="text-lg font-black text-white tabular-nums">{value}</div>
-      {sub && <div className="text-[10px] text-gray-600">{sub}</div>}
+      <div className="text-xl font-black text-duo-text tabular-nums">{value}</div>
+      {sub && <div className="text-[10px] font-bold text-duo-light">{sub}</div>}
     </div>
   );
 }
@@ -89,6 +94,7 @@ export function ResultsView({ attempt, day, onRetry, onNext, onMap }: ResultsVie
   const dojoProgress = useGameStore((s) => s.dojoProgress);
   const dayProgress = dojoProgress.find((d) => d.day === day);
   const attemptCount = dayProgress?.attempts ?? 1;
+  const cfg = MEDAL_CONFIG[medal];
 
   const preview = response.length > 200 ? response.slice(0, 200) + '…' : response;
 
@@ -98,147 +104,123 @@ export function ResultsView({ attempt, day, onRetry, onNext, onMap }: ResultsVie
   const qualityPct = qualityScore;
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b ${medalBgGradient(medal)} text-white flex flex-col`}>
+    <div className={`min-h-screen bg-gradient-to-b ${cfg.bgGradient} flex flex-col`}>
       <div className="max-w-lg mx-auto w-full px-4 py-8 flex flex-col gap-6">
 
+        {/* Label */}
         <div className="text-center">
-          <div className="text-[10px] text-gray-600 font-mono uppercase tracking-[0.2em] mb-1">
-            Day {day} · Results
-          </div>
+          <p className="text-[10px] font-black text-duo-light uppercase tracking-widest">
+            Day {day} · Results {cfg.celebrationEmoji}
+          </p>
         </div>
 
-        <div className="flex flex-col items-center gap-3">
+        {/* Medal display */}
+        <div className="flex flex-col items-center gap-4">
           <div
             className={`
-              w-32 h-32 rounded-full flex items-center justify-center text-7xl
-              ${medalRingClass(medal)} ${medalGlowClass(medal)}
-              animate-[bounce_0.6s_ease-out_1]
+              w-36 h-36 rounded-full bg-white flex items-center justify-center text-7xl
+              ${cfg.ringColor} shadow-xl
+              animate-bounce-in
             `}
           >
-            {medalEmoji(medal)}
+            {cfg.emoji}
           </div>
 
-          <div className={`text-xs font-black tracking-[0.25em] px-3 py-1 rounded-full border ${medalLabelColor(medal)}`}>
-            {medalLabel(medal)}
-          </div>
+          <span className={`text-xs font-black tracking-widest px-4 py-1.5 rounded-full border-2 ${cfg.labelColor}`}>
+            {cfg.label}
+          </span>
 
-          <div
-            className={`
-              text-6xl font-black tabular-nums leading-none
-              ${medalScoreColor(medal)}
-              [filter:drop-shadow(0_0_20px_currentColor)]
-            `}
-          >
+          <div className={`text-6xl font-black tabular-nums ${cfg.scoreColor}`}>
             {score.toLocaleString()}
           </div>
-          <div className="text-xs text-gray-500 font-semibold tracking-widest uppercase">points</div>
+          <p className="text-xs font-black text-duo-light uppercase tracking-widest">POINTS</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <ScoreStat
-            label="Quality Score"
-            value={qualityScore}
-            sub="/ 100"
-            icon={<TrendingUp size={10} />}
-          />
-          <ScoreStat
-            label="Attempts"
-            value={attemptCount}
-            sub={attemptCount === 1 ? 'one-shot!' : undefined}
-            icon={<Hash size={10} />}
-          />
-          <ScoreStat
-            label="Input Tokens"
-            value={inputTokens.toLocaleString()}
-            icon={<Zap size={10} />}
-          />
-          <ScoreStat
-            label="Output Tokens"
-            value={outputTokens.toLocaleString()}
-            icon={<Zap size={10} />}
-          />
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 gap-3">
+          <ScoreStat label="Quality"  value={qualityScore} sub="/ 100"                           icon={<TrendingUp size={10} />} />
+          <ScoreStat label="Attempts" value={attemptCount} sub={attemptCount === 1 ? 'One-shot! 🎯' : undefined} icon={<Hash size={10} />} />
+          <ScoreStat label="Input"    value={inputTokens.toLocaleString()}  sub="tokens" icon={<Zap size={10} />} />
+          <ScoreStat label="Output"   value={outputTokens.toLocaleString()} sub="tokens" icon={<Zap size={10} />} />
         </div>
 
-        <div className="space-y-3 p-4 rounded-xl bg-gray-900/70 border border-gray-800">
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-1.5 text-gray-400">
+        {/* Performance bars */}
+        <div className="card-duo p-5 space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs font-black">
+              <div className="flex items-center gap-1.5 text-duo-muted">
                 <TrendingUp size={12} />
-                <span>Quality</span>
+                品質スコア
               </div>
-              <span className="font-mono text-gray-300 font-semibold">{qualityPct}/100</span>
+              <span className="text-duo-text">{qualityPct}/100</span>
             </div>
-            <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+            <div className="xp-bar h-3">
               <div
-                className={`h-full rounded-full transition-all duration-1000 delay-300 ${
-                  qualityPct >= 80 ? 'bg-emerald-500' : qualityPct >= 50 ? 'bg-yellow-500' : 'bg-red-500'
-                }`}
+                className={`xp-fill ${qualityPct >= 80 ? 'bg-duo-green' : qualityPct >= 50 ? 'bg-duo-yellow' : 'bg-duo-red'}`}
                 style={{ width: `${qualityPct}%` }}
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-1.5 text-gray-400">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs font-black">
+              <div className="flex items-center gap-1.5 text-duo-muted">
                 <Zap size={12} />
-                <span>Token Efficiency</span>
+                トークン効率
               </div>
-              <span className="font-mono text-gray-300 font-semibold">{totalTokens.toLocaleString()} used</span>
+              <span className={`${totalTokens <= goldTokenLimit ? 'text-duo-green' : 'text-duo-red'}`}>
+                {totalTokens <= goldTokenLimit ? '✅ 制限内' : '❌ 超過'}
+              </span>
             </div>
-            <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+            <div className="xp-bar h-3">
               <div
-                className={`h-full rounded-full transition-all duration-1000 delay-500 ${
-                  medal === 'gold' ? 'bg-yellow-400' : medal === 'silver' ? 'bg-gray-400' : medal === 'bronze' ? 'bg-orange-500' : 'bg-gray-600'
-                }`}
+                className={`xp-fill ${cfg.barColor}`}
                 style={{ width: `${Math.max(5, Math.min(100, tokenEffPct))}%` }}
               />
             </div>
-            <div className="flex justify-between text-[10px] text-gray-600">
-              <span>gold limit: {goldTokenLimit.toLocaleString()} tokens</span>
-              <span className={totalTokens <= goldTokenLimit ? 'text-yellow-600' : 'text-red-700'}>
-                {totalTokens <= goldTokenLimit ? 'within limit' : 'over limit'}
-              </span>
+            <div className="flex justify-between text-[10px] font-bold text-duo-light">
+              <span>Gold上限: {goldTokenLimit.toLocaleString()} tokens</span>
+              <span>使用: {totalTokens.toLocaleString()}</span>
             </div>
           </div>
         </div>
 
+        {/* Response preview */}
         {response && (
           <div className="space-y-2">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Response Preview</div>
-            <div className="p-3 rounded-xl bg-gray-900/80 border border-gray-800 text-xs text-gray-400 leading-relaxed font-mono whitespace-pre-wrap break-words">
+            <p className="text-[10px] font-black text-duo-light uppercase tracking-widest">レスポンスプレビュー</p>
+            <div className="card-duo p-4 text-xs text-duo-muted leading-relaxed font-mono whitespace-pre-wrap break-words">
               {preview}
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-2 pt-1">
+        {/* Action buttons */}
+        <div className="grid grid-cols-3 gap-3">
           <button
             onClick={onRetry}
-            className="flex flex-col items-center gap-1.5 py-3.5 rounded-xl border border-gray-700 bg-gray-800/60 hover:bg-gray-800 hover:border-gray-600 active:scale-95 transition-all duration-200 text-xs font-semibold text-gray-300 group"
+            className="btn-duo-outline flex flex-col items-center gap-2 py-4 text-xs"
           >
-            <RotateCcw size={16} className="group-hover:rotate-[-45deg] transition-transform duration-300" />
+            <RotateCcw size={18} />
             再挑戦
           </button>
           <button
             onClick={onNext}
-            className={`
-              flex flex-col items-center gap-1.5 py-3.5 rounded-xl border active:scale-95 transition-all duration-200 text-xs font-semibold group
-              ${medal === 'gold'
-                ? 'border-yellow-600/60 bg-yellow-950/50 hover:bg-yellow-950/80 hover:border-yellow-500 text-yellow-300'
-                : 'border-emerald-700/60 bg-emerald-950/50 hover:bg-emerald-950/80 hover:border-emerald-500 text-emerald-300'
-              }
-            `}
+            className={`btn-duo flex flex-col items-center gap-2 py-4 text-xs ${
+              medal === 'gold'
+                ? 'bg-duo-yellow border-duo-yellow-dark text-amber-700'
+                : 'bg-duo-green border-duo-green-dark text-white'
+            }`}
           >
-            <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-            次のDOJOへ
+            <ChevronRight size={18} />
+            次へ進む
           </button>
           <button
             onClick={onMap}
-            className="flex flex-col items-center gap-1.5 py-3.5 rounded-xl border border-gray-700 bg-gray-800/60 hover:bg-gray-800 hover:border-gray-600 active:scale-95 transition-all duration-200 text-xs font-semibold text-gray-300 group"
+            className="btn-duo-outline flex flex-col items-center gap-2 py-4 text-xs"
           >
-            <Map size={16} />
-            マップに戻る
+            <Map size={18} />
+            マップへ
           </button>
         </div>
 
