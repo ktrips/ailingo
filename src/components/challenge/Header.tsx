@@ -22,7 +22,7 @@ export function Header() {
         >
           <span className="text-2xl animate-heart-beat">🍎</span>
           <span className="text-xl font-black text-white tracking-tight drop-shadow">
-            アイ<span className="text-apple-gold">リンゴ</span>
+            Ai<span className="text-apple-gold">Lingo</span>
           </span>
         </button>
 
