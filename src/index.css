@@ -11,76 +11,113 @@
 body {
   font-family: 'Nunito', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background-color: #F7F7F7;
-  color: #3C3C3C;
+  background-color: #FFF5F5;
+  color: #2D1B1B;
 }
 
 @layer components {
-  /* Duolingo-style 3D press button */
-  .btn-duo {
-    @apply font-bold rounded-2xl px-6 py-3 transition-all duration-100
+
+  /* ── ゲーム風 3D プレスボタン ── */
+  .btn {
+    @apply font-black rounded-2xl px-6 py-3 transition-all duration-100
            border-b-4 active:border-b-0 active:translate-y-1
-           disabled:opacity-50 disabled:cursor-not-allowed disabled:border-b-0 disabled:translate-y-1;
+           disabled:opacity-50 disabled:cursor-not-allowed
+           disabled:border-b-0 disabled:translate-y-0
+           select-none;
   }
-  .btn-duo-green {
-    @apply btn-duo bg-duo-green border-duo-green-dark text-white
-           hover:bg-duo-green/90;
+  .btn-red {
+    @apply btn bg-apple-red border-apple-red-dark text-white
+           hover:brightness-110 shadow-lg shadow-apple-red/30;
   }
-  .btn-duo-blue {
-    @apply btn-duo bg-duo-blue border-duo-blue-dark text-white
-           hover:bg-duo-blue/90;
+  .btn-pink {
+    @apply btn bg-apple-pink border-pink-600 text-white
+           hover:brightness-110 shadow-lg shadow-pink-400/30;
   }
-  .btn-duo-yellow {
-    @apply btn-duo bg-duo-yellow border-duo-yellow-dark text-duo-text
-           hover:bg-duo-yellow/90;
+  .btn-gold {
+    @apply btn bg-apple-gold border-apple-gold-dark text-apple-text
+           hover:brightness-110 shadow-lg shadow-yellow-400/30;
   }
-  .btn-duo-purple {
-    @apply btn-duo bg-duo-purple border-duo-purple-dark text-white
-           hover:bg-duo-purple/90;
+  .btn-green {
+    @apply btn bg-apple-green border-apple-green-dark text-white
+           hover:brightness-110 shadow-lg shadow-green-400/30;
   }
-  .btn-duo-outline {
-    @apply btn-duo bg-white border-duo-border text-duo-text
-           hover:bg-gray-50;
+  .btn-blue {
+    @apply btn bg-blue-500 border-blue-700 text-white
+           hover:brightness-110 shadow-lg shadow-blue-400/30;
+  }
+  .btn-white {
+    @apply btn bg-white border-apple-border-dark text-apple-text
+           hover:bg-apple-bg shadow-card;
+  }
+  .btn-outline {
+    @apply btn bg-white border-apple-border-dark text-apple-muted
+           hover:bg-apple-bg;
   }
 
-  /* Duolingo-style card */
-  .card-duo {
-    @apply bg-white rounded-3xl border-2 border-duo-border shadow-sm;
+  /* ── カード ── */
+  .card {
+    @apply bg-white rounded-3xl border-2 border-apple-border shadow-card;
+  }
+  .card-red {
+    @apply bg-white rounded-3xl border-2 border-apple-red/30 shadow-card;
+  }
+  .card-hover {
+    @apply card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200;
   }
 
-  /* XP progress bar */
+  /* ── XP バー ── */
   .xp-bar {
-    @apply h-4 bg-gray-200 rounded-full overflow-hidden;
+    @apply h-4 bg-apple-border rounded-full overflow-hidden;
   }
   .xp-fill {
     @apply h-full rounded-full transition-all duration-700;
   }
 
-  /* Skill node (circular button on world map) */
-  .skill-node {
-    @apply w-16 h-16 rounded-full border-b-4 flex flex-col items-center justify-center
-           font-bold transition-all duration-150 hover:scale-110 active:scale-95
-           active:border-b-0 active:translate-y-1;
+  /* ── スキルノード（ワールドマップ用円形ボタン） ── */
+  .node {
+    @apply w-20 h-20 rounded-full border-b-[5px] flex flex-col items-center justify-center
+           font-black transition-all duration-150 select-none
+           hover:scale-110 active:scale-95 active:border-b-0 active:translate-y-1;
   }
-  .skill-node-done {
-    @apply bg-duo-green border-duo-green-dark text-white shadow-lg;
+  .node-done {
+    @apply node bg-apple-red border-apple-red-dark text-white
+           shadow-lg shadow-apple-red/40;
   }
-  .skill-node-active {
-    @apply bg-white border-duo-border text-duo-text shadow-md
-           ring-4 ring-duo-yellow ring-offset-2 animate-bounce-slow;
+  .node-next {
+    @apply node bg-white border-apple-border-dark text-apple-red
+           ring-4 ring-apple-red/50 ring-offset-2
+           shadow-lg shadow-apple-red/20
+           animate-bounce-slow;
   }
-  .skill-node-locked {
-    @apply bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed opacity-70;
+  .node-locked {
+    @apply node bg-gray-100 border-gray-200 text-gray-300
+           cursor-not-allowed opacity-60;
   }
 
-  /* Medal styles */
-  .medal-gold   { @apply text-duo-yellow; filter: drop-shadow(0 0 8px rgb(255 217 0 / 0.6)); }
-  .medal-silver { @apply text-gray-400; }
-  .medal-bronze { @apply text-amber-700; }
+  /* ── バッジ ── */
+  .badge {
+    @apply inline-flex items-center gap-1 font-black text-xs rounded-full px-3 py-1 border-2;
+  }
+  .badge-red   { @apply badge bg-apple-red/10 border-apple-red/30 text-apple-red; }
+  .badge-gold  { @apply badge bg-yellow-50 border-yellow-300 text-amber-600; }
+  .badge-green { @apply badge bg-green-50 border-green-300 text-green-700; }
+  .badge-blue  { @apply badge bg-blue-50 border-blue-200 text-blue-700; }
+  .badge-pink  { @apply badge bg-pink-50 border-pink-300 text-pink-700; }
+  .badge-gray  { @apply badge bg-gray-100 border-gray-200 text-gray-500; }
 
-  /* Streak fire badge */
+  /* ── ストリークバッジ ── */
   .streak-badge {
-    @apply flex items-center gap-1 bg-duo-orange/10 text-duo-orange
-           font-bold text-sm rounded-full px-3 py-1 border border-duo-orange/20;
+    @apply flex items-center gap-1 bg-orange-50 text-orange-500
+           font-black text-sm rounded-full px-3 py-1 border-2 border-orange-200;
+  }
+
+  /* ── メダル ── */
+  .medal-gold   { @apply text-yellow-400; filter: drop-shadow(0 0 10px rgba(255,214,10,0.7)); }
+  .medal-silver { @apply text-gray-400;   filter: drop-shadow(0 0 6px rgba(200,200,200,0.5)); }
+  .medal-bronze { @apply text-orange-500; filter: drop-shadow(0 0 6px rgba(205,127,50,0.5)); }
+
+  /* ── ハートパーティクル装飾 ── */
+  .heart-deco {
+    @apply pointer-events-none select-none text-apple-red/20 absolute font-black;
   }
 }

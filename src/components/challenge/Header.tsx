@@ -11,31 +11,31 @@ export function Header() {
   };
 
   return (
-    <header className="bg-white border-b-2 border-duo-border sticky top-0 z-50">
+    <header className="sticky top-0 z-50 border-b-2 border-apple-border"
+            style={{ background: 'linear-gradient(135deg, #FF3B30 0%, #FF6B6B 100%)' }}>
       <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
 
-        {/* Logo */}
+        {/* ロゴ */}
         <button
           onClick={() => setView('map')}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 hover:opacity-85 transition-opacity"
         >
-          <span className="text-2xl">🍎</span>
-          <span className="text-xl font-black text-duo-text tracking-tight">
-            Ai<span className="text-duo-green">Lingo</span>
+          <span className="text-2xl animate-heart-beat">🍎</span>
+          <span className="text-xl font-black text-white tracking-tight drop-shadow">
+            アイ<span className="text-apple-gold">リンゴ</span>
           </span>
         </button>
 
-        {/* Stats */}
-        <div className="flex items-center gap-3">
+        {/* ステータス */}
+        <div className="flex items-center gap-2">
           {streak > 0 && (
-            <div className="streak-badge">
+            <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white font-black text-sm rounded-full px-3 py-1 border border-white/30">
               🔥 <span>{streak}</span>
             </div>
           )}
 
-          <div className="flex items-center gap-1.5 bg-duo-yellow/10 text-amber-600 font-black text-sm rounded-full px-3 py-1 border border-duo-yellow/30">
-            <span>⭐</span>
-            <span>{totalScore.toLocaleString()}</span>
+          <div className="flex items-center gap-1.5 bg-apple-gold/90 text-apple-text font-black text-sm rounded-full px-3 py-1 border-b-2 border-apple-gold-dark shadow">
+            ⭐ <span>{totalScore.toLocaleString()}</span>
           </div>
 
           {user && (
@@ -44,19 +44,19 @@ export function Header() {
                 <img
                   src={user.photoURL}
                   alt={user.displayName ?? ''}
-                  className="w-8 h-8 rounded-full border-2 border-duo-green"
+                  className="w-8 h-8 rounded-full border-2 border-white shadow"
                 />
               )}
               <button
                 onClick={() => setView('settings')}
-                className="p-2 rounded-xl text-duo-muted hover:text-duo-text hover:bg-duo-bg transition-colors"
+                className="p-2 rounded-xl text-white/70 hover:text-white hover:bg-white/20 transition-colors"
                 title="設定"
               >
                 <Settings className="w-4 h-4" />
               </button>
               <button
                 onClick={handleSignOut}
-                className="p-2 rounded-xl text-duo-muted hover:text-duo-red hover:bg-duo-red/10 transition-colors"
+                className="p-2 rounded-xl text-white/70 hover:text-white hover:bg-white/20 transition-colors"
                 title="ログアウト"
               >
                 <LogOut className="w-4 h-4" />

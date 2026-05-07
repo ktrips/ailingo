@@ -34,57 +34,51 @@ export function UsageMeter({ sprint, weekly }: UsageMeterProps) {
   const weeklyPct = Math.min(100, (weekly.tokensUsed / weekly.tokensLimit) * 100);
   const sprintExpired = Date.now() >= new Date(sprint.windowEnd).getTime();
 
-  const sprintBarColor = sprintPct > 85 ? 'bg-duo-red' : sprintPct > 60 ? 'bg-duo-yellow' : 'bg-duo-green';
-  const sprintTextColor = sprintPct > 85 ? 'text-duo-red' : sprintPct > 60 ? 'text-amber-500' : 'text-duo-green';
+  const sprintBar  = sprintPct > 85 ? 'bg-apple-red'   : sprintPct > 60 ? 'bg-apple-gold' : 'bg-apple-green';
+  const sprintText = sprintPct > 85 ? 'text-apple-red' : sprintPct > 60 ? 'text-amber-500' : 'text-apple-green';
 
   return (
-    <div className="card-duo p-4 space-y-3">
-      {/* Sprint */}
-      <div className="space-y-2">
+    <div className="space-y-3">
+      {/* スプリント */}
+      <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Zap size={13} className="text-duo-yellow" />
-            <span className="text-xs font-black text-duo-muted uppercase tracking-wide">Sprint</span>
+            <Zap size={13} className="text-apple-gold" />
+            <span className="text-xs font-black text-apple-muted uppercase tracking-wide">Sprint</span>
             {sprintExpired ? (
-              <span className="text-[10px] font-black text-duo-red bg-duo-red/10 rounded-full px-2 py-0.5">ENDED</span>
+              <span className="badge badge-red text-[10px]">ENDED</span>
             ) : (
-              <span className={`text-xs font-black font-mono ${sprintTextColor}`}>
+              <span className={`text-xs font-black font-mono ${sprintText}`}>
                 ⏱ {formatCountdown(sprint.windowEnd)}
               </span>
             )}
           </div>
-          <span className="text-xs font-black font-mono text-duo-muted">
-            <span className={sprintTextColor}>{formatTokens(sprint.tokensUsed)}</span>
-            <span className="text-duo-light"> / </span>
+          <span className="text-xs font-black font-mono text-apple-muted">
+            <span className={sprintText}>{formatTokens(sprint.tokensUsed)}</span>
+            <span className="text-apple-light"> / </span>
             {formatTokens(sprint.tokensLimit)}
           </span>
         </div>
         <div className="xp-bar h-3">
-          <div
-            className={`xp-fill ${sprintBarColor}`}
-            style={{ width: `${sprintPct}%` }}
-          />
+          <div className={`xp-fill ${sprintBar}`} style={{ width: `${sprintPct}%` }} />
         </div>
       </div>
 
-      {/* Weekly */}
-      <div className="space-y-2">
+      {/* ウィークリー */}
+      <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Calendar size={13} className="text-duo-blue" />
-            <span className="text-xs font-black text-duo-muted uppercase tracking-wide">Weekly</span>
+            <Calendar size={13} className="text-blue-500" />
+            <span className="text-xs font-black text-apple-muted uppercase tracking-wide">Weekly</span>
           </div>
-          <span className="text-xs font-black font-mono text-duo-muted">
-            <span className="text-duo-blue">{formatTokens(weekly.tokensUsed)}</span>
-            <span className="text-duo-light"> / </span>
+          <span className="text-xs font-black font-mono text-apple-muted">
+            <span className="text-blue-500">{formatTokens(weekly.tokensUsed)}</span>
+            <span className="text-apple-light"> / </span>
             {formatTokens(weekly.tokensLimit)}
           </span>
         </div>
         <div className="xp-bar h-3">
-          <div
-            className="xp-fill bg-duo-blue"
-            style={{ width: `${weeklyPct}%` }}
-          />
+          <div className="xp-fill bg-blue-500" style={{ width: `${weeklyPct}%` }} />
         </div>
       </div>
     </div>
